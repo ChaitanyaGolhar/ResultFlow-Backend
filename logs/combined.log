@@ -1,0 +1,75 @@
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-24T14:07:56.485Z'
+}
+{
+  message: 'Starting job cmqs5i16b000811mt4orvjm2v',
+  level: 'info',
+  timestamp: '2026-06-24T14:10:44.101Z'
+}
+{
+  message: 'Job cmqs5i16b000811mt4orvjm2v completed successfully',
+  level: 'info',
+  timestamp: '2026-06-24T14:10:48.969Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-24T15:51:54.685Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-24T15:53:51.946Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-24T16:29:35.361Z'
+}
+{
+  message: 'Starting job cmqsb40nn000en56ub9kau5d3',
+  level: 'info',
+  timestamp: '2026-06-24T16:47:47.924Z'
+}
+{
+  message: 'Job cmqsb40nn000en56ub9kau5d3 completed successfully',
+  level: 'info',
+  timestamp: '2026-06-24T16:47:53.134Z'
+}
+{
+  message: 'Starting job cmqsbhc2k0003yyl9tvlimpke',
+  level: 'info',
+  timestamp: '2026-06-24T16:58:09.236Z'
+}
+{
+  message: 'Job cmqsbhc2k0003yyl9tvlimpke completed successfully',
+  level: 'info',
+  timestamp: '2026-06-24T16:58:14.094Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-24T17:01:58.244Z'
+}
+{
+  message: 'Starting job cmqsbscpj0007yyl9b4vr75c6',
+  level: 'info',
+  timestamp: '2026-06-24T17:06:43.834Z'
+}
+{
+  message: 'Job cmqsbscpj0007yyl9b4vr75c6 completed successfully',
+  level: 'info',
+  timestamp: '2026-06-24T17:06:49.276Z'
+}
+{
+  message: 'Starting job cmqscanv6000byyl98bjf1wut',
+  level: 'info',
+  timestamp: '2026-06-24T17:20:57.677Z'
+}
+{
+  message: 'Job cmqscanv6000byyl98bjf1wut completed successfully',
+  level: 'info',
+  timestamp: '2026-06-24T17:21:02.679Z'
+}

@@ -1,0 +1,193 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  templates       Template[]
+  generationJobs  GenerationJob[]
+  refreshTokens   RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// ─────────────────────────────────────────
+// TEMPLATES
+// ─────────────────────────────────────────
+
+model Template {
+  id           String         @id @default(cuid())
+  userId       String
+  name         String
+  description  String?
+  fileType     TemplateType
+  filePath     String
+  fileSize     Int
+  pageWidth    Float          // in points (PDF unit)
+  pageHeight   Float
+  thumbnailPath String?
+  isDeleted    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id])
+  fields          TemplateField[]
+  generationJobs  GenerationJob[]
+
+  @@index([userId])
+  @@map("templates")
+}
+
+model TemplateField {
+  id           String     @id @default(cuid())
+  templateId   String
+  fieldKey     String     // e.g. "studentName", "rollNumber", "maths"
+  label        String     // Display label
+  x            Float      // Left position in points
+  y            Float      // Top position from bottom (PDF coordinate)
+  width        Float
+  height       Float
+  fontSize     Int        @default(12)
+  fontFamily   String     @default("Helvetica")
+  fontColor    String     @default("#000000")
+  align        TextAlign  @default(LEFT)
+  isBold       Boolean    @default(false)
+  isItalic     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@map("template_fields")
+}
+
+enum TemplateType {
+  PDF
+  PNG
+  JPG
+}
+
+enum TextAlign {
+  LEFT
+  CENTER
+  RIGHT
+}
+
+// ─────────────────────────────────────────
+// GENERATION JOBS
+// ─────────────────────────────────────────
+
+model GenerationJob {
+  id              String    @id @default(cuid())
+  userId          String
+  templateId      String
+  dataFilePath    String
+  columnMapping   Json      // { excelColumn: systemFieldKey }
+  totalRows       Int
+  processedRows   Int       @default(0)
+  failedRows      Int       @default(0)
+  status          JobStatus @default(PENDING)
+  zipFilePath     String?
+  errorMessage    String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user                User                @relation(fields: [userId], references: [id])
+  template            Template            @relation(fields: [templateId], references: [id])
+  generatedDocuments  GeneratedDocument[]
+  jobLogs             JobLog[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("generation_jobs")
+}
+
+model GeneratedDocument {
+  id          String    @id @default(cuid())
+  jobId       String
+  rowIndex    Int
+  identifier  String    // Roll number or unique ID
+  filePath    String
+  fileSize    Int
+  status      DocStatus @default(SUCCESS)
+  errorMessage String?
+  createdAt   DateTime  @default(now())
+
+  job GenerationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@map("generated_documents")
+}
+
+model JobLog {
+  id        String   @id @default(cuid())
+  jobId     String
+  level     LogLevel
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  job GenerationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@map("job_logs")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum DocStatus {
+  SUCCESS
+  FAILED
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+}
