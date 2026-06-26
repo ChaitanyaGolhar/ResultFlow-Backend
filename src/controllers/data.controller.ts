@@ -55,8 +55,7 @@ export const validateData = async (req: AuthRequest, res: Response) => {
 
     // Load template fields
     const template = await prisma.template.findFirst({
-      where: { id: templateId, userId },
-      include: { fields: true }
+      where: { id: templateId, userId }
     });
 
     if (!template) {
@@ -77,7 +76,9 @@ export const validateData = async (req: AuthRequest, res: Response) => {
     let validRows = 0;
     let invalidRows = 0;
 
-    const templateFieldKeys = template.fields.map(f => f.fieldKey);
+    const templateDoc = await prisma.templateDocument.findUnique({ where: { templateId } });
+    const documentModel: any = templateDoc?.document || { components: [] };
+    const templateFieldKeys = documentModel.components.filter((c: any) => c.fieldKey).map((c: any) => c.fieldKey);
     const mappedExcelColumns = Object.keys(columnMapping);
     
     // Reverse mapping: templateKey -> excelColumn

@@ -69,46 +69,85 @@ model Template {
   updatedAt    DateTime       @updatedAt
 
   user            User             @relation(fields: [userId], references: [id])
-  fields          TemplateField[]
+  editorVersion   String            @default("v2")
   generationJobs  GenerationJob[]
+  document        TemplateDocument?
+  components      TemplateComponent[]
+  versions        TemplateVersion[]
 
   @@index([userId])
   @@map("templates")
 }
 
-model TemplateField {
-  id           String     @id @default(cuid())
-  templateId   String
-  fieldKey     String     // e.g. "studentName", "rollNumber", "maths"
-  label        String     // Display label
-  x            Float      // Left position in points
-  y            Float      // Top position from bottom (PDF coordinate)
-  width        Float
-  height       Float
-  fontSize     Int        @default(12)
-  fontFamily   String     @default("Helvetica")
-  fontColor    String     @default("#000000")
-  align        TextAlign  @default(LEFT)
-  isBold       Boolean    @default(false)
-  isItalic     Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+// Document Model — stored as a single JSON blob per template version
+model TemplateDocument {
+  id         String   @id @default(uuid())
+  templateId String   @unique
+  version    Int      @default(1)
+  document   Json     // The full Document Model JSON
 
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
-  @@map("template_fields")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("template_documents")
+}
+
+// Component — individual visual element on the canvas
+model TemplateComponent {
+  id         String        @id @default(uuid())
+  templateId String
+  type       ComponentType
+  fieldKey   String?       // maps to Excel column via ColumnMapping
+  label      String?
+  properties Json          // All visual properties (see Document Model spec)
+  zIndex     Int           @default(0)
+  pageNumber Int           @default(1)
+  isVisible  Boolean       @default(true)
+  isLocked   Boolean       @default(false)
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([templateId])
+  @@map("template_components")
+}
+
+enum ComponentType {
+  TEXT
+  STATIC_TEXT
+  IMAGE
+  QR_CODE
+  BARCODE
+  SHAPE_RECT
+  SHAPE_ELLIPSE
+  LINE
+}
+
+// Template version history for undo across sessions (future-ready)
+model TemplateVersion {
+  id         String @id @default(uuid())
+  templateId String
+  version    Int
+  snapshot   Json   // Full Document Model at this version
+  createdBy  String // userId
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([templateId, version])
+  @@index([templateId])
+  @@map("template_versions")
 }
 
 enum TemplateType {
   PDF
   PNG
   JPG
-}
-
-enum TextAlign {
-  LEFT
-  CENTER
-  RIGHT
 }
 
 // ─────────────────────────────────────────

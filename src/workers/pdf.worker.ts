@@ -1,9 +1,10 @@
 import { Worker, Job } from 'bullmq';
 import { PDFDocument } from 'pdf-lib';
-const { rgb, StandardFonts } = require('pdf-lib');
+const { rgb } = require('pdf-lib');
 import * as xlsx from 'xlsx';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
+import { renderDocument } from '../services/rendering/renderEngine';
 import path from 'path';
 import archiver from 'archiver';
 import prisma from '../utils/prisma';
@@ -55,11 +56,17 @@ const processJob = async (job: Job) => {
 
   try {
     const template = await prisma.template.findUnique({
-      where: { id: templateId },
-      include: { fields: true }
+      where: { id: templateId }
     });
 
     if (!template) throw new Error('Template not found');
+
+    const templateDoc = await prisma.templateDocument.findUnique({
+      where: { templateId: template.id }
+    });
+    
+    if (!templateDoc) throw new Error('Template document model not found');
+    const documentModel = templateDoc.document as any;
 
     const templateAbsPath = path.join(process.cwd(), template.filePath);
     const dataAbsPath = path.resolve(dataFilePath);
@@ -90,32 +97,17 @@ const processJob = async (job: Job) => {
       const identifier = row[identifierKey] ? String(row[identifierKey]) : `row_${i + 1}`;
 
       try {
-        const pdfDoc = await PDFDocument.load(templateBytes);
-        const pages = pdfDoc.getPages();
-        const firstPage = pages[0];
-
-        // For simplicity, embed standard font. In prod, load from template config
-        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-        const { height } = firstPage.getSize();
-
-        for (const field of template.fields) {
-          const excelCol = reverseMap[field.fieldKey];
-          if (!excelCol) continue;
-
-          const value = row[excelCol] ? String(row[excelCol]) : '';
-          const color = hexToRgb(field.fontColor);
-
-          firstPage.drawText(value, {
-            x: field.x,
-            y: height - field.y - field.fontSize,
-            size: field.fontSize,
-            font,
-            color: rgb(color.r, color.g, color.b)
-          });
+        // Build data map from row + column mappings
+        const dataMap: Record<string, string> = {};
+        for (const [excelCol, tmplKey] of Object.entries(columnMapping)) {
+          dataMap[tmplKey as string] = String(row[excelCol] ?? '');
         }
 
-        const pdfBytes = await pdfDoc.save();
+        const pdfBytes = await renderDocument(documentModel, dataMap, {
+          target: 'pdf',
+          templateBytes,
+          templateType: template.fileType as 'PDF' | 'PNG' | 'JPG',
+        });
         const outPdfPath = path.join(jobOutDir, `${identifier}.pdf`);
         await fs.writeFile(outPdfPath, pdfBytes);
 

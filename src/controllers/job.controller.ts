@@ -5,11 +5,17 @@ import path from 'path';
 import fs from 'fs';
 import * as xlsx from 'xlsx';
 import { pdfQueue } from '../utils/queue';
+import { detectWarningsForRow, scanAllRows } from '../services/validation/warningDetector';
+import { renderDocument } from '../services/rendering/renderEngine';
 
 export const create = async (req: AuthRequest, res: Response) => {
   try {
-    const { templateId, uploadId, columnMapping } = req.body;
+    const { templateId, uploadId, columnMapping, preflightAcknowledged } = req.body;
     const userId = req.user!.id;
+
+    if (!preflightAcknowledged) {
+      return res.status(400).json({ success: false, error: { code: 'PREFLIGHT_NOT_ACKNOWLEDGED', message: 'Run preflight validation and acknowledge results before generating.', details: [] } });
+    }
 
     // Validate template
     const template = await prisma.template.findFirst({
@@ -261,3 +267,200 @@ export const downloadDocument = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to download document', details: [] } });
   }
 };
+
+export const previewRow = async (req: AuthRequest, res: Response) => {
+  try {
+    const { templateId, uploadSessionId, rowIndex, columnMapping } = req.body;
+    const userId = req.user!.id;
+
+    const templateDoc = await prisma.templateDocument.findUnique({ where: { templateId } });
+    const template = await prisma.template.findUnique({ where: { id: templateId } });
+    if (!template || !templateDoc) return res.status(404).json({ success: false, message: 'Template not found' });
+
+    const filePath = path.join(process.env.STORAGE_LOCAL_PATH || './storage', 'data', userId, uploadSessionId);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, message: 'Data file not found' });
+
+    const workbook = xlsx.readFile(filePath);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = xlsx.utils.sheet_to_json<any>(sheet, { defval: "" });
+
+    if (rowIndex < 0 || rowIndex >= jsonData.length) {
+      return res.status(400).json({ success: false, message: 'Invalid row index' });
+    }
+
+    const row = jsonData[rowIndex];
+    const dataMap: Record<string, string> = {};
+    for (const [excelCol, tmplKey] of Object.entries(columnMapping || {})) {
+      dataMap[tmplKey as string] = String(row[excelCol] ?? '');
+    }
+
+    const templateBytes = await fs.promises.readFile(path.join(process.cwd(), template.filePath));
+
+    const pdfBytes = await renderDocument(templateDoc.document as any, dataMap, {
+      target: 'png-preview',
+      templateBytes,
+      templateType: template.fileType as 'PDF' | 'PNG' | 'JPG',
+    });
+
+    const warnings = await detectWarningsForRow(templateDoc.document as any, dataMap);
+
+    res.json({
+      success: true,
+      data: {
+        previewImage: `data:application/pdf;base64,${Buffer.from(pdfBytes).toString('base64')}`,
+        rowIndex,
+        rowData: dataMap,
+        warnings
+      }
+    });
+  } catch (error) {
+    console.error('PREVIEW ROW ERROR:', error);
+    res.status(500).json({ success: false, message: 'Failed to preview row' });
+  }
+};
+
+export const scanWarnings = async (req: AuthRequest, res: Response) => {
+  try {
+    const { templateId, uploadSessionId, columnMapping } = req.body;
+    const userId = req.user!.id;
+
+    const templateDoc = await prisma.templateDocument.findUnique({ where: { templateId } });
+    if (!templateDoc) return res.status(404).json({ success: false, message: 'Template not found' });
+
+    const filePath = path.join(process.env.STORAGE_LOCAL_PATH || './storage', 'data', userId, uploadSessionId);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, message: 'Data file not found' });
+
+    const workbook = xlsx.readFile(filePath);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = xlsx.utils.sheet_to_json<any>(sheet, { defval: "" });
+
+    const mappedRows = jsonData.map(row => {
+      const dataMap: Record<string, string> = {};
+      for (const [excelCol, tmplKey] of Object.entries(columnMapping || {})) {
+        dataMap[tmplKey as string] = String(row[excelCol] ?? '');
+      }
+      return dataMap;
+    });
+
+    const results = await scanAllRows(templateDoc.document as any, mappedRows);
+
+    const warningsByType: Record<string, number> = {};
+    let rowsWithErrors = 0;
+    results.forEach(r => {
+      let hasError = false;
+      const seenTypes = new Set<string>();
+      r.warnings.forEach(w => {
+        if (w.severity === 'ERROR') hasError = true;
+        seenTypes.add(w.type);
+      });
+      seenTypes.forEach(t => {
+        warningsByType[t] = (warningsByType[t] || 0) + 1;
+      });
+      if (hasError) rowsWithErrors++;
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalRows: mappedRows.length,
+        rowsWithWarnings: results.length,
+        rowsWithErrors,
+        warningsByType,
+        rowWarnings: results
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to scan warnings' });
+  }
+};
+
+export const preflight = async (req: AuthRequest, res: Response) => {
+  try {
+    const { templateId, uploadSessionId, columnMapping } = req.body;
+    const userId = req.user!.id;
+
+    const template = await prisma.template.findUnique({ where: { id: templateId, userId } });
+    const templateDoc = await prisma.templateDocument.findUnique({ where: { templateId } });
+    
+    const criticalErrors = [];
+    const warnings = [];
+
+    if (!template) criticalErrors.push({ type: 'TEMPLATE_NOT_FOUND', severity: 'ERROR', message: 'Template not found' });
+    if (!templateDoc) criticalErrors.push({ type: 'DOCUMENT_MODEL_NOT_FOUND', severity: 'ERROR', message: 'Template has no saved visual components' });
+
+    const filePath = path.join(process.env.STORAGE_LOCAL_PATH || './storage', 'data', userId, uploadSessionId);
+    let jsonData: any[] = [];
+    if (!fs.existsSync(filePath)) {
+      criticalErrors.push({ type: 'UPLOAD_NOT_FOUND', severity: 'ERROR', message: 'Data file not found' });
+    } else {
+      const workbook = xlsx.readFile(filePath);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      jsonData = xlsx.utils.sheet_to_json<any>(sheet, { defval: "" });
+    }
+
+    if (!columnMapping || Object.keys(columnMapping).length === 0) {
+      criticalErrors.push({ type: 'NO_MAPPINGS', severity: 'ERROR', message: 'No columns mapped' });
+    } else if (templateDoc) {
+      const docModel: any = templateDoc.document;
+      const templateFieldKeys = docModel.components.filter((c: any) => c.fieldKey).map((c: any) => c.fieldKey);
+      
+      const mappedTmplKeys = new Set(Object.values(columnMapping));
+      const unmapped = templateFieldKeys.filter((k: string) => !mappedTmplKeys.has(k));
+      if (unmapped.length > 0) {
+        criticalErrors.push({
+          type: 'UNMAPPED_TEMPLATE_FIELD',
+          severity: 'ERROR',
+          message: `Unmapped components: ${unmapped.join(', ')}`
+        });
+      }
+    }
+
+    let warningRows = 0;
+    let errorRows = 0;
+
+    if (criticalErrors.length === 0) {
+      const mappedRows = jsonData.map(row => {
+        const dataMap: Record<string, string> = {};
+        for (const [excelCol, tmplKey] of Object.entries(columnMapping || {})) {
+          dataMap[tmplKey as string] = String(row[excelCol] ?? '');
+        }
+        return dataMap;
+      });
+
+      const results = await scanAllRows(templateDoc!.document as any, mappedRows);
+      
+      if (results.length > 0) {
+        warningRows = results.length;
+        warnings.push({
+          type: 'WARNINGS_DETECTED',
+          severity: 'WARNING',
+          affectedRows: results.map(r => r.rowIndex),
+          message: `${results.length} rows have warnings`
+        });
+      }
+    } else {
+      errorRows = jsonData.length || 1;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        canGenerate: criticalErrors.length === 0,
+        criticalErrors,
+        warnings,
+        summary: {
+          totalRows: jsonData.length,
+          readyRows: Math.max(0, jsonData.length - warningRows - errorRows),
+          warningRows,
+          errorRows,
+          templateName: template?.name,
+          mappedFields: Object.keys(columnMapping || {}).length
+        }
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed preflight check' });
+  }
+};
+

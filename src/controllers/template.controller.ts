@@ -83,19 +83,25 @@ export const list = async (req: AuthRequest, res: Response) => {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { fields: true } } }
+        include: {
+          _count: {
+            select: { components: { where: { fieldKey: { not: null } } } }
+          }
+        }
       }),
       prisma.template.count({ where })
     ]);
 
-    const formattedTemplates = templates.map(t => ({
-      id: t.id,
-      name: t.name,
-      fileType: t.fileType,
-      thumbnailUrl: t.thumbnailPath,
-      fieldCount: t._count.fields,
-      createdAt: t.createdAt
-    }));
+    const formattedTemplates = templates.map((t: any) => {
+      return {
+        id: t.id,
+        name: t.name,
+        fileType: t.fileType,
+        thumbnailUrl: t.thumbnailPath,
+        fieldCount: t._count?.components || 0,
+        createdAt: t.createdAt
+      };
+    });
 
     res.json({
       success: true,
@@ -117,23 +123,32 @@ export const list = async (req: AuthRequest, res: Response) => {
 export const getOne = async (req: AuthRequest, res: Response) => {
   try {
     const template = await prisma.template.findUnique({
-      where: { id: req.params.id },
-      include: { fields: true }
+      where: { id: req.params.id, userId: req.user!.id },
+      include: {
+        components: true
+      }
     });
+
+    if (!template) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Template not found', details: [] } });
+    }
+
+    const fields = template.components
+      .filter(c => c.fieldKey)
+      .map(c => ({
+        id: c.id,
+        fieldKey: c.fieldKey,
+        type: c.type
+      }));
 
     res.json({
       success: true,
       data: {
         template: {
-          id: template!.id,
-          name: template!.name,
-          fileType: template!.fileType,
-          pageWidth: template!.pageWidth,
-          pageHeight: template!.pageHeight,
-          fileUrl: template!.filePath,
-          thumbnailUrl: template!.thumbnailPath,
-          fields: template!.fields,
-          createdAt: template!.createdAt
+          ...template,
+          fileUrl: template.filePath,
+          thumbnailUrl: template.thumbnailPath,
+          fields
         }
       }
     });
@@ -167,26 +182,5 @@ export const remove = async (req: AuthRequest, res: Response) => {
     res.json({ success: true, data: { message: 'Template deleted' } });
   } catch (error) {
     res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Delete failed', details: [] } });
-  }
-};
-
-export const saveFields = async (req: AuthRequest, res: Response) => {
-  try {
-    const { fields } = req.body;
-    const templateId = req.params.id;
-
-    // Delete existing fields and insert new ones (full replacement)
-    await prisma.$transaction([
-      prisma.templateField.deleteMany({ where: { templateId } }),
-      prisma.templateField.createMany({
-        data: fields.map((f: any) => ({ ...f, templateId }))
-      })
-    ]);
-
-    const updatedFields = await prisma.templateField.findMany({ where: { templateId } });
-
-    res.json({ success: true, data: { fields: updatedFields } });
-  } catch (error) {
-    res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to save fields', details: [] } });
   }
 };

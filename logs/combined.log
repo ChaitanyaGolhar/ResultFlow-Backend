@@ -73,3 +73,108 @@
   level: 'info',
   timestamp: '2026-06-24T17:21:02.679Z'
 }
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-25T20:40:01.862Z'
+}
+{
+  message: 'Starting job cmqu0ruwy0003o21wq9n72skw',
+  level: 'info',
+  timestamp: '2026-06-25T21:33:56.800Z'
+}
+{
+  level: 'error',
+  message: 'Error generating PDF for row 0 WinAnsi cannot encode "च" (0x091a)',
+  stack: 'Error: WinAnsi cannot encode "च" (0x091a)\n' +
+    '    at Encoding.encodeUnicodeCodePoint (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\@pdf-lib\\standard-fonts\\lib\\Encoding.js:23:23)\n' +
+    '    at StandardFontEmbedder.encodeTextAsGlyphs (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:124:35)\n' +
+    '    at StandardFontEmbedder.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:59:25)\n' +
+    '    at PDFFont.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\api\\PDFFont.ts:89:26)\n' +
+    '    at drawTextInBounds (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:167:26)\n' +
+    '    at renderComponent (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:74:7)\n' +
+    '    at renderDocument (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:39:11)\n' +
+    '    at async Worker.processJob [as processFn] (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\workers\\pdf.worker.ts:106:26)\n' +
+    '    at async C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\bullmq\\dist\\cjs\\classes\\worker.js:589:32',
+  timestamp: '2026-06-25T21:33:59.977Z'
+}
+{
+  level: 'error',
+  message: 'Error generating PDF for row 1 WinAnsi cannot encode "म" (0x092e)',
+  stack: 'Error: WinAnsi cannot encode "म" (0x092e)\n' +
+    '    at Encoding.encodeUnicodeCodePoint (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\@pdf-lib\\standard-fonts\\lib\\Encoding.js:23:23)\n' +
+    '    at StandardFontEmbedder.encodeTextAsGlyphs (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:124:35)\n' +
+    '    at StandardFontEmbedder.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:59:25)\n' +
+    '    at PDFFont.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\api\\PDFFont.ts:89:26)\n' +
+    '    at drawTextInBounds (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:167:26)\n' +
+    '    at renderComponent (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:74:7)\n' +
+    '    at renderDocument (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:39:11)\n' +
+    '    at async Worker.processJob [as processFn] (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\workers\\pdf.worker.ts:106:26)\n' +
+    '    at async C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\bullmq\\dist\\cjs\\classes\\worker.js:589:32',
+  timestamp: '2026-06-25T21:34:01.092Z'
+}
+{
+  message: 'Job cmqu0ruwy0003o21wq9n72skw completed successfully',
+  level: 'info',
+  timestamp: '2026-06-25T21:34:01.777Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-25T22:16:39.239Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-25T22:27:29.251Z'
+}
+{
+  message: 'Starting job cmqu2rtao0001bjeeaec6d5kn',
+  level: 'info',
+  timestamp: '2026-06-25T22:29:53.925Z'
+}
+{
+  message: 'Job cmqu2rtao0001bjeeaec6d5kn completed successfully',
+  level: 'info',
+  timestamp: '2026-06-25T22:29:58.993Z'
+}
+{
+  message: 'Starting job cmqu3au2e0001smsqv434tk2e',
+  level: 'info',
+  timestamp: '2026-06-25T22:44:41.308Z'
+}
+{
+  message: 'Job cmqu3au2e0001smsqv434tk2e completed successfully',
+  level: 'info',
+  timestamp: '2026-06-25T22:44:45.792Z'
+}
+{
+  message: 'Starting job cmqu3xypi0007bjeepwglyu03',
+  level: 'info',
+  timestamp: '2026-06-25T23:02:40.413Z'
+}
+{
+  message: 'Job cmqu3xypi0007bjeepwglyu03 completed successfully',
+  level: 'info',
+  timestamp: '2026-06-25T23:02:46.732Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-26T02:39:41.732Z'
+}
+{
+  message: 'PDF Worker is ready and listening for jobs...',
+  level: 'info',
+  timestamp: '2026-06-26T14:15:03.370Z'
+}
+{
+  message: 'Starting job cmqv0nk610009omeat0xintx8',
+  level: 'info',
+  timestamp: '2026-06-26T14:18:23.167Z'
+}
+{
+  message: 'Job cmqv0nk610009omeat0xintx8 completed successfully',
+  level: 'info',
+  timestamp: '2026-06-26T14:18:36.933Z'
+}

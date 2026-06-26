@@ -1,0 +1,30 @@
+{
+  level: 'error',
+  message: 'Error generating PDF for row 0 WinAnsi cannot encode "च" (0x091a)',
+  stack: 'Error: WinAnsi cannot encode "च" (0x091a)\n' +
+    '    at Encoding.encodeUnicodeCodePoint (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\@pdf-lib\\standard-fonts\\lib\\Encoding.js:23:23)\n' +
+    '    at StandardFontEmbedder.encodeTextAsGlyphs (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:124:35)\n' +
+    '    at StandardFontEmbedder.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:59:25)\n' +
+    '    at PDFFont.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\api\\PDFFont.ts:89:26)\n' +
+    '    at drawTextInBounds (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:167:26)\n' +
+    '    at renderComponent (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:74:7)\n' +
+    '    at renderDocument (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:39:11)\n' +
+    '    at async Worker.processJob [as processFn] (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\workers\\pdf.worker.ts:106:26)\n' +
+    '    at async C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\bullmq\\dist\\cjs\\classes\\worker.js:589:32',
+  timestamp: '2026-06-25T21:33:59.977Z'
+}
+{
+  level: 'error',
+  message: 'Error generating PDF for row 1 WinAnsi cannot encode "म" (0x092e)',
+  stack: 'Error: WinAnsi cannot encode "म" (0x092e)\n' +
+    '    at Encoding.encodeUnicodeCodePoint (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\@pdf-lib\\standard-fonts\\lib\\Encoding.js:23:23)\n' +
+    '    at StandardFontEmbedder.encodeTextAsGlyphs (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:124:35)\n' +
+    '    at StandardFontEmbedder.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\core\\embedders\\StandardFontEmbedder.ts:59:25)\n' +
+    '    at PDFFont.widthOfTextAtSize (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\pdf-lib\\src\\api\\PDFFont.ts:89:26)\n' +
+    '    at drawTextInBounds (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:167:26)\n' +
+    '    at renderComponent (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:74:7)\n' +
+    '    at renderDocument (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\services\\rendering\\renderEngine.ts:39:11)\n' +
+    '    at async Worker.processJob [as processFn] (C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\src\\workers\\pdf.worker.ts:106:26)\n' +
+    '    at async C:\\Users\\chaitanya\\Desktop\\Backend-90-Days\\ResultFlow\\Backend\\node_modules\\bullmq\\dist\\cjs\\classes\\worker.js:589:32',
+  timestamp: '2026-06-25T21:34:01.092Z'
+}

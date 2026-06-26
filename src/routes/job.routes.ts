@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { create, list, getOne, retry, remove, downloadZip, listDocuments, downloadDocument } from '../controllers/job.controller';
+import { create, list, getOne, retry, remove, downloadZip, listDocuments, downloadDocument, previewRow, scanWarnings, preflight } from '../controllers/job.controller';
 import { validate } from '../middlewares/validate.middleware';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { checkOwnership } from '../middlewares/ownership.middleware';
@@ -14,6 +14,11 @@ router.get('/', list);
 router.get('/:id', checkOwnership('generationJob'), getOne);
 router.post('/:id/retry', checkOwnership('generationJob'), retry);
 router.delete('/:id', checkOwnership('generationJob'), remove);
+
+// Generation flow endpoints
+router.post('/preview-row', previewRow);
+router.post('/scan-warnings', scanWarnings);
+router.post('/preflight', preflight);
 
 // Download Endpoints
 router.get('/:id/download/zip', checkOwnership('generationJob'), downloadZip);
